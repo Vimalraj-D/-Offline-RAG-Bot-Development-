@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Bot · Intelligent Document Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 4L24 8V24L16 28L8 24V8L16 4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <circle cx="16" cy="16" r="3" fill="currentColor"/>
+                            <path d="M16 4V13M16 19V28M8 8L14 13M18 19L24 24M24 8L18 13M14 19L8 24" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>RAG Assistant</h1>
+                        <p class="logo-subtitle">Intelligent Document Search</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="status-badge" id="statusBadge">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ready</span>
+                    </div>
+                    
+                    <button class="upload-trigger-button" onclick="openUploadModal()">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 12V4M9 4L6 7M9 4L12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4 14H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span class="button-text">Upload Documents</span>
+                    </button>
+                    
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <svg class="icon-moon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 2C5.68629 2 3 4.68629 3 8C3 11.3137 5.68629 14 9 14C10.0609 14 11.0783 13.7366 12 13.2654C10.8958 12.6337 10.1111 11.4243 10.1111 10C10.1111 7.93045 11.7082 6.33333 13.7778 6.33333C14.5087 6.33333 15.2043 6.52513 15.8254 6.85714C15.2793 4.11163 12.8958 2 9 2Z" fill="currentColor"/>
+                        </svg>
+                        <svg class="icon-sun" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                            <circle cx="9" cy="9" r="3" fill="currentColor"/>
+                            <path d="M9 1V3M9 15V17M17 9H15M3 9H1M14.5 3.5L13 5M5 13L3.5 14.5M14.5 14.5L13 13M5 5L3.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Documents</span>
+                    <span class="stat-value" id="docCount">0</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-label">Model</span>
+                    <span class="stat-value" id="modelName">Loading...</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-label">Status</span>
+                    <span class="stat-value stat-ready">Active</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Welcome Message -->
+                    <div class="message welcome-message">
+                        <div class="message-avatar bot-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L17 7V17L12 22L7 17V7L12 2Z" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                <div class="welcome-header">
+                                    <h2>Welcome to your RAG Assistant</h2>
+                                    <p class="welcome-subtitle">Ask questions about your documents and get instant, accurate answers powered by AI</p>
+                                </div>
+                                
+                                <div class="suggestion-chips">
+                                    <button class="suggestion-chip" onclick="sendSuggestion('Summarize the key points from my documents')">
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 3H12M2 7H12M2 11H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                        Summarize documents
+                                    </button>
+                                    <button class="suggestion-chip" onclick="sendSuggestion('What are the main topics covered?')">
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M7 5V7L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                        Find main topics
+                                    </button>
+                                    <button class="suggestion-chip" onclick="sendSuggestion('Extract important dates and deadlines')">
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <rect x="2" y="3" width="10" height="9" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M2 6H12M5 1V3M9 1V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                        Extract dates
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-container">
+                    <form class="chat-form" id="chatForm">
+                        <div class="input-wrapper">
+                            <textarea 
+                                id="queryInput" 
+                                class="chat-input" 
+                                placeholder="Ask anything about your documents..."
+                                rows="1"
+                                autocomplete="off"
+                            ></textarea>
+                            <button type="submit" class="send-button" id="sendButton">
+                                <svg class="send-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 10L18 2L10 18L9 11L2 10Z" fill="currentColor"/>
+                                </svg>
+                                <span class="button-text">Send</span>
+                            </button>
+                        </div>
+                        <div class="input-hint">
+                            Press <kbd>Enter</kbd> to send · <kbd>Shift + Enter</kbd> for new line · <kbd>⌘K</kbd> to focus
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 3.5C2 2.67 2.67 2 3.5 2H12.5C13.33 2 14 2.67 14 3.5V12.5C14 13.33 13.33 14 12.5 14H3.5C2.67 14 2 13.33 2 12.5V3.5Z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M5 6H11M5 9H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        Your Documents
+                    </h3>
+                    <div class="documents-list" id="documentsList">
+                        <p class="empty-state">No documents yet. Upload some to get started!</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 2L12 6V12L8 16L4 12V6L8 2Z" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="8" cy="9" r="1.5" fill="currentColor"/>
+                        </svg>
+                        Active Sources
+                    </h3>
+                    <div class="sources-list" id="sourcesList">
+                        <p class="empty-state">No sources yet. Ask a question to get started!</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-section tips-section">
+                    <h3 class="sidebar-title">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M8 6V8M8 10.5V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Tips
+                    </h3>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <span class="tip-icon">💡</span>
+                            <p>Ask specific questions for more accurate answers</p>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">📚</span>
+                            <p>Upload multiple documents to cross-reference information</p>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-icon">🎯</span>
+                            <p>Review the sources to verify the information</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload Documents</h2>
+                <button class="modal-close" onclick="closeUploadModal()" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="upload-area" id="uploadArea">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="24" cy="24" r="23" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4" opacity="0.3"/>
+                        <path d="M24 30V16M24 16L18 22M24 16L30 22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 32H34" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    <h3>Drop files here or click to browse</h3>
+                    <p>Supported formats: PDF, TXT, MD, DOCX, CSV · Max 16MB per file</p>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md,.docx,.csv" hidden>
+                </div>
+                
+                <div id="selectedFiles" class="selected-files"></div>
+                
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="button button-secondary" onclick="closeUploadModal()">Cancel</button>
+                <button class="button button-primary" id="uploadButton" onclick="uploadFiles()" disabled>
+                    Upload & Process
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Processing your query...</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+</body>
+</html>
